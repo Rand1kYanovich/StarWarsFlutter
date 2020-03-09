@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:firstflutterapp/api_service.dart';
 import 'package:firstflutterapp/entity/card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 
 class AllCards extends StatefulWidget {
   @override
@@ -16,7 +19,6 @@ class _AllCardsState extends State<AllCards> {
   @override
   void initState() {
     super.initState();
-    _loadCards();
   }
 
   void _loadCards() async {
@@ -24,14 +26,17 @@ class _AllCardsState extends State<AllCards> {
       isLoading = true;
     });
 
-    final results = await getAllCard(page);
+    print("Im here");
+    final resultsJson = await Provider.of<ApiService>(context).getCards(page);
+    print(resultsJson);
+
+    final result = PeopleResponse.fromJson(resultsJson.body);
 
     setState(() {
-      cards.addAll(results);
+      cards.addAll(result.results);
       isLoading = false;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +46,9 @@ class _AllCardsState extends State<AllCards> {
           Expanded(
             child: NotificationListener<ScrollNotification>(
               onNotification: (ScrollNotification scrollInfo) {
-                if (!isLoading && scrollInfo.metrics.pixels ==
-                    scrollInfo.metrics.maxScrollExtent) {
+                if (!isLoading &&
+                    scrollInfo.metrics.pixels ==
+                        scrollInfo.metrics.maxScrollExtent) {
                   setState(() {
                     page++;
                     _loadCards();
